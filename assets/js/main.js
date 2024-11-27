@@ -1,34 +1,15 @@
 const pokemonList = document.getElementById('pokemonList')
-const pokemonsDetails = document.getElementById('pokemonDetails')
 const loadMoreButton = document.getElementById('loadMoreButton')
+const modal = document.getElementById("pokemonCard");
 
 const maxRecords = 151
 const limit = 10
 let offset = 0;
 
 
-function convertPokemonToPokemonDetail(pokemon) {
-    return `
-        <div class="pokemon ${pokemon.type}">
-            <span class="number">#${pokemon.number}</span>
-            <span class="name">${pokemon.name}</span>
-
-            <div class="detail">
-                <ol class="types">
-                    ${pokemon.types.map((type) => `<li class="type ${type}">${type}</li>`).join('')}
-                </ol>
-
-                <img src="${pokemon.photo}"
-                     alt="${pokemon.name}">
-            </div>
-        </li>
-    </div>
-    `
-}
 
 function convertPokemonToLi(pokemon) {
-    return `
-     <a href="./pokemon-detail.html">
+    return  `
         <li class="pokemon ${pokemon.type}">
             <span class="number">#${pokemon.number}</span>
             <span class="name">${pokemon.name}</span>
@@ -42,9 +23,54 @@ function convertPokemonToLi(pokemon) {
                      alt="${pokemon.name}">
             </div>
         </li>
-    </a>
     `
 }
+
+function showPokemonModal(pokemon) {
+    // Seleciona elementos no modal
+    const modal = document.getElementById("pokemonCard");
+    const nameElement = document.getElementById("pokemon-name");
+    const photoElement = document.getElementById("pokemon-photo");
+    const typeElement = document.getElementById("pokemon-type");
+    const weightElement = document.getElementById("pokemon-weight");
+    const heightElement = document.getElementById("pokemon-height");
+
+    // Converte altura e peso para metros e quilogramas
+    const heightInMeters = (pokemon.height * 0.3048).toFixed(2);
+    const weightInKg = (pokemon.weight * 0.453592).toFixed(2);
+
+    // Atualiza o conteúdo do modal com os detalhes do Pokémon
+    nameElement.textContent = pokemon.name;
+    photoElement.src = pokemon.photo;
+    typeElement.textContent = `Tipo: ${pokemon.type}`;
+    weightElement.textContent = `Peso: ${weightInKg} Kg`;
+    heightElement.textContent = `Altura: ${heightInMeters} metros`;
+
+    // Exibe o modal adicionando a classe .show
+    modal.classList.add("show");
+}
+
+// Fechar o modal ao clicar no botão de fechar
+document.querySelector(".close-button").addEventListener("click", () => {
+    modal.classList.remove("show");
+});
+
+
+function addPokemonClickEvent() {
+    const pokemonElements = pokemonList.querySelectorAll('li.pokemon');
+
+    pokemonElements.forEach((element) => {
+        element.addEventListener("click", () => {
+            const pokemonId = element.getAttribute("data-id");
+
+            pokeApi.getPokemonDetail({ url: `https://pokeapi.co/api/v2/pokemon/${pokemonId}` })
+                .then((pokemonDetail) => {
+                    showPokemonModal(pokemonDetail);
+                });
+        });
+    });
+}
+
 
 function loadPokemonDetails(Pokemon) {
     pokeApi.getPokemons(offset).then((pokemons = []) => {
